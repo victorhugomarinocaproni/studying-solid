@@ -12,7 +12,7 @@ public class SqliteDbContext : IDbContext
     {
         Connection = new SqliteConnection("DataSource=loja.db");
         Connection.Open();
-        
+
         using var command = Connection.CreateCommand();
         command.CommandText = @"
             CREATE TABLE IF NOT EXISTS Orders (
