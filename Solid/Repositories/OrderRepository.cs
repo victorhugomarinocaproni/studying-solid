@@ -8,12 +8,13 @@ namespace Solid.Repositories;
 // Ideally, we would use an ORM, so then we would be able to implement things here without 
 // dealing with which database we are working, maintaining the LSP principle.
 // Since we are not using an ORM, we had to implement the methods using hard coded SQLite queries.
-public class OrderRepository(IDbContext dbContext) : IRepository<Order>
+public class OrderRepository(IDbContext dbContext) : IRepository<Order>, IOrderRepository
 {
     public void Add(Order order)
     {
         using var command = dbContext.Connection.CreateCommand();
-        command.CommandText = "INSERT INTO Orders (customer_name, order_items, total_price, order_status, order_date, customer_category) VALUES (@name, @items, @price, @status, @date, @category)";
+        command.CommandText =
+            "INSERT INTO Orders (customer_name, order_items, total_price, order_status, order_date, customer_category) VALUES (@name, @items, @price, @status, @date, @category)";
 
         var nameParam = command.CreateParameter();
         nameParam.ParameterName = "@name";
@@ -22,7 +23,7 @@ public class OrderRepository(IDbContext dbContext) : IRepository<Order>
 
         var itemsParam = command.CreateParameter();
         itemsParam.ParameterName = "@items";
-        itemsParam.Value = order.Items;
+        itemsParam.Value = order.Items.ToOrderItemString();
         command.Parameters.Add(itemsParam);
 
         var priceParam = command.CreateParameter();
@@ -71,18 +72,95 @@ public class OrderRepository(IDbContext dbContext) : IRepository<Order>
         return null;
     }
 
-    public IEnumerable<Order> GetAll()
-    {
-        throw new NotImplementedException();
-    }
-
     public void Update(Order order)
     {
-        throw new NotImplementedException();
+        using var command = dbContext.Connection.CreateCommand();
+        command.CommandText = @"
+        UPDATE Orders
+        SET customer_name = @name,
+            order_items = @items,
+            total_price = @price,
+            order_status = @status,
+            order_date = @date,
+            customer_category = @category
+        WHERE id = @id";
+
+        command.Parameters.Add(new SqliteParameter("@name", order.CustomerName));
+        command.Parameters.Add(new SqliteParameter("@items", order.Items.ToOrderItemString()));
+        command.Parameters.Add(new SqliteParameter("@price", order.TotalPrice));
+        command.Parameters.Add(new SqliteParameter("@status", order.Status));
+        command.Parameters.Add(new SqliteParameter("@date", order.OrderDate));
+        command.Parameters.Add(new SqliteParameter("@category", order.CustomerCategory));
+        command.Parameters.Add(new SqliteParameter("@id", order.Id));
+
+        command.ExecuteNonQuery();
     }
 
-    public void Delete(int id)
+    public IEnumerable<Order> GetOrdersByCustomerName(string customerName)
     {
-        throw new NotImplementedException();
+        var orders = new List<Order>();
+        using var command = dbContext.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM Orders WHERE customer_name = @name";
+        command.Parameters.Add(new SqliteParameter("@name", customerName));
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            var order = new Order(
+                reader.GetInt32(reader.GetOrdinal("id")),
+                reader.GetString(reader.GetOrdinal("customer_name")),
+                reader.GetString(reader.GetOrdinal("order_items")).ToOrderItemList(),
+                reader.GetFloat(reader.GetOrdinal("total_price")),
+                (OrderStatus)reader.GetInt32(reader.GetOrdinal("order_status")),
+                DateTime.Parse(reader.GetString(reader.GetOrdinal("order_date"))),
+                (CustomerCategory)reader.GetInt32(reader.GetOrdinal("customer_category"))
+            );
+            orders.Add(order);
+        }
+
+        return orders;
+    }
+
+    public IEnumerable<Order> GetAllOrders()
+    {
+        var orders = new List<Order>();
+        using var command = dbContext.Connection.CreateCommand();
+        command.CommandText = "SELECT * FROM Orders";
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            var order = new Order(
+                reader.GetInt32(reader.GetOrdinal("id")),
+                reader.GetString(reader.GetOrdinal("customer_name")),
+                reader.GetString(reader.GetOrdinal("order_items")).ToOrderItemList(),
+                reader.GetFloat(reader.GetOrdinal("total_price")),
+                (OrderStatus)reader.GetInt32(reader.GetOrdinal("order_status")),
+                DateTime.Parse(reader.GetString(reader.GetOrdinal("order_date"))),
+                (CustomerCategory)reader.GetInt32(reader.GetOrdinal("customer_category"))
+            );
+            orders.Add(order);
+        }
+
+        return orders;
+    }
+
+    public IEnumerable<Customer> GetAllCustomers()
+    {
+        var customers = new List<Customer>();
+        using var command = dbContext.Connection.CreateCommand();
+        command.CommandText = "SELECT DISTINCT customer_name, customer_category FROM Orders";
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            var customer = new Customer(
+                reader.GetString(reader.GetOrdinal("customer_name")),
+                (CustomerCategory)reader.GetInt32(reader.GetOrdinal("customer_category"))
+            );
+            customers.Add(customer);
+        }
+
+        return customers;
     }
 }

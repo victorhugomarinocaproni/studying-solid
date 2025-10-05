@@ -9,4 +9,6 @@ public class EmailSender : INotificationSender
     {
         Console.WriteLine($"Email sent to {customerName}: Order {orderStatus:G}");
     }
+    
+    
 }

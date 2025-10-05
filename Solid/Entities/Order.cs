@@ -1,10 +1,11 @@
 namespace Solid.Entities;
 public class Order
 {
+    public int Id { get; set; }
     public string CustomerName { get; }
     public List<OrderItem> Items { get; }
     public float TotalPrice { get; set; }
-    public OrderStatus Status { get; }
+    public OrderStatus Status { get; set; }
     public DateTime OrderDate { get; }
     public CustomerCategory CustomerCategory { get; }
 

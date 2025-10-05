@@ -5,13 +5,42 @@ namespace Solid.Services;
 
 public class NotificationService(INotificationSender notificationSender)
 {
-    public void NotifyUserOrderCreated(string customerName)
+    private void NotifyUserOrderCreated(string customerName)
     {
         notificationSender.NotifyOrderStatus(customerName, OrderStatus.Received);
     }
-    
-    public void NotifyUserOrderApproved(string customerName)
+
+    private void NotifyUserOrderApproved(string customerName)
     {
         notificationSender.NotifyOrderStatus(customerName, OrderStatus.Approved);
+    }
+
+    private void NotifyUserOrderShipped(string customerName)
+    {
+        notificationSender.NotifyOrderStatus(customerName, OrderStatus.Shipped);
+    }
+    
+    private void NotifyUserOrderDelivered(string customerName)
+    {
+        notificationSender.NotifyOrderStatus(customerName, OrderStatus.Shipped);
+    }
+
+    public void NotifyUser(string customerName, OrderStatus orderStatus)
+    {
+        switch (orderStatus)
+        {
+            case OrderStatus.Pending:
+                NotifyUserOrderCreated(customerName);
+                break;
+            case OrderStatus.Approved:
+                NotifyUserOrderApproved(customerName);
+                break;
+            case OrderStatus.Shipped:
+                NotifyUserOrderShipped(customerName);
+                break;
+            case OrderStatus.Delivered:
+                NotifyUserOrderDelivered(customerName);
+                break;
+        }
     }
 }

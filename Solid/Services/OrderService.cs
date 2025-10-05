@@ -10,7 +10,6 @@ public class OrderService(
     NotificationService notificationService,
     IOrderCreator orderCreator)
 {
-
     public void CreateOrder(string customerName, List<OrderItem> orderItems, CustomerCategory customerCategory)
     {
         var order = orderCreator.CreateNewOrder(
@@ -20,10 +19,10 @@ public class OrderService(
 
         orderRepository.Add(order);
         
-        notificationService.NotifyUserOrderCreated(customerName);
+        notificationService.NotifyUser(customerName, OrderStatus.Approved);
     }
 
-    public Order GetOrder(int orderId)
+    private Order GetOrder(int orderId)
     {
         var order = orderRepository.GetById(orderId);
         if (order == null)
@@ -31,5 +30,14 @@ public class OrderService(
             throw new EntityNotFoundException($"Order {orderId} not found.");
         }
         return order;
+    }
+
+    public void UpdateOrderStatus(int orderId, OrderStatus orderStatus)
+    {
+        var order = GetOrder(orderId);
+        order.Status = orderStatus;
+        orderRepository.Update(order);
+        
+        notificationService.NotifyUser(order.CustomerName, order.Status);
     }
 }
