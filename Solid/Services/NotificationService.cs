@@ -22,7 +22,7 @@ public class NotificationService(INotificationSender notificationSender)
     
     private void NotifyUserOrderDelivered(string customerName)
     {
-        notificationSender.NotifyOrderStatus(customerName, OrderStatus.Shipped);
+        notificationSender.NotifyOrderStatus(customerName, OrderStatus.Delivered);
     }
 
     public void NotifyUser(string customerName, OrderStatus orderStatus)
