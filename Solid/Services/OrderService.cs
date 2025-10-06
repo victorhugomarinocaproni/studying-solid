@@ -10,19 +10,21 @@ public class OrderService(
     NotificationService notificationService,
     IOrderCreator orderCreator)
 {
-    public void CreateOrder(string customerName, List<OrderItem> orderItems, CustomerCategory customerCategory)
+    public int CreateOrder(string customerName, List<OrderItem> orderItems, CustomerCategory customerCategory)
     {
         var order = orderCreator.CreateNewOrder(
             customerName,
             orderItems,
             customerCategory);
 
-        orderRepository.Add(order);
+        var orderId = orderRepository.Add(order);
         
         notificationService.NotifyUser(customerName, OrderStatus.Approved);
+        
+        return orderId;
     }
 
-    private Order GetOrder(int orderId)
+    public Order GetOrder(int orderId)
     {
         var order = orderRepository.GetById(orderId);
         if (order == null)

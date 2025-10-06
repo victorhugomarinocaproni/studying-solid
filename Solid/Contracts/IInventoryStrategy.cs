@@ -4,5 +4,5 @@ namespace Solid.Contracts;
 
 public interface IInventoryStrategy
 {
-    public void Validate(Inventory inventory, List<OrderItem> orderItems);
+    public bool Validate(Inventory inventory, List<OrderItem> orderItems);
 }

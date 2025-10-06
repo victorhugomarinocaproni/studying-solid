@@ -35,5 +35,6 @@ public class Order
         CustomerCategory customerCategory)
         : this(customerName, items, totalPrice, status, orderDate, customerCategory)
     {
+        Id = id;
     }
 }

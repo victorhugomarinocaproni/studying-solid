@@ -6,7 +6,7 @@ namespace Solid.Strategies;
 
 public class DefaultInventoryStrategy : IInventoryStrategy
 {
-    public void Validate(Inventory inventory, List<OrderItem> orderItems)
+    public bool Validate(Inventory inventory, List<OrderItem> orderItems)
     {
         foreach (var item in orderItems)
         {
@@ -23,5 +23,6 @@ public class DefaultInventoryStrategy : IInventoryStrategy
                 throw new InsufficientStockException($"Product {item.ProductName} is out of stock");
             }
         }
+        return true;
     }
 }

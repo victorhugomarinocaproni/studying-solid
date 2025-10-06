@@ -3,16 +3,17 @@ using Solid.Entities;
 
 namespace Solid.Services;
 
-public class DefaultOrderCreator(
-    DiscountService discountService
-    ) : IOrderCreator
+public class EspecialOrderCreator(DiscountService discountService) : IOrderCreator
 {
     public Order CreateNewOrder(
         string customerName,
         List<OrderItem> orderItems,
         CustomerCategory customerCategory)
     {
+        
+        const float specialTax = 1.15f;
         var orderTotalPrice = 0f;
+        
         foreach (var item in orderItems)
         {
             orderTotalPrice += item.ProductPrice * item.Quantity;
@@ -25,12 +26,12 @@ public class DefaultOrderCreator(
             OrderStatus.Pending,
             DateTime.Now, 
             customerCategory
-            );
+        );
         
         discountService.ApplyOrderDiscount(order);
         
-        // VIP Customers receive a 5% discount in Default Orders.
-        discountService.ApplyVipCustomerDiscount(order);
+        // Especial Orders have an additional tax of 15%
+        order.TotalPrice += order.TotalPrice * specialTax;
         
         return order;
     }

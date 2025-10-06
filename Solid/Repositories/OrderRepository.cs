@@ -10,7 +10,7 @@ namespace Solid.Repositories;
 // Since we are not using an ORM, we had to implement the methods using hard coded SQLite queries.
 public class OrderRepository(IDbContext dbContext) : IRepository<Order>, IOrderRepository
 {
-    public void Add(Order order)
+    public int Add(Order order)
     {
         using var command = dbContext.Connection.CreateCommand();
         command.CommandText =
@@ -45,8 +45,13 @@ public class OrderRepository(IDbContext dbContext) : IRepository<Order>, IOrderR
         categoryParam.ParameterName = "@category";
         categoryParam.Value = order.CustomerCategory;
         command.Parameters.Add(categoryParam);
-
+        
         command.ExecuteNonQuery();
+
+        using var lastIdCommand = dbContext.Connection.CreateCommand();
+        lastIdCommand.CommandText = "SELECT last_insert_rowid()";
+        var result = lastIdCommand.ExecuteScalar();
+        return Convert.ToInt32(result);
     }
 
     public Order? GetById(int id)
@@ -58,7 +63,7 @@ public class OrderRepository(IDbContext dbContext) : IRepository<Order>, IOrderR
 
         if (reader.Read())
         {
-            return new Order(
+            var order = new Order(
                 reader.GetInt32(reader.GetOrdinal("id")),
                 reader.GetString(reader.GetOrdinal("customer_name")),
                 reader.GetString(reader.GetOrdinal("order_items")).ToOrderItemList(),
@@ -67,6 +72,7 @@ public class OrderRepository(IDbContext dbContext) : IRepository<Order>, IOrderR
                 DateTime.Parse(reader.GetString(reader.GetOrdinal("order_date"))),
                 (CustomerCategory)reader.GetInt32(reader.GetOrdinal("customer_category"))
             );
+            return order;
         }
 
         return null;

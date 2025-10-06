@@ -6,8 +6,15 @@ namespace Solid.Services;
 public class PixPaymentProcessor(
     OrderService orderService) : IPaymentProcessor, IQrCodeGenerator
 {
-    public void Process(Order order)
+    public void Process(Order order, float amount)
     {
+        
+        if (amount <= order.TotalPrice)
+        {
+            Console.WriteLine("Insufficient funds");
+            return;
+        }
+        
         Console.WriteLine("Generating Pix QrCode...");
         GenerateQrCode();
         Console.WriteLine("Pix Received!");

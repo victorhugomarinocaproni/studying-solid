@@ -14,12 +14,14 @@ public class InventoryService(
         {
             inventoryStrategy.Validate(inventory, orderItems);
         }
-        catch (EntityNotFoundException)
+        catch (EntityNotFoundException e)
         {
+            Console.WriteLine(e);
             return false;
         }
-        catch (InsufficientStockException)
+        catch (InsufficientStockException e)
         {
+            Console.WriteLine(e);
             return false;
         }
 

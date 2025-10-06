@@ -6,8 +6,8 @@ namespace Solid.Services;
 public class PaymentProcessorService(
     IPaymentProcessor paymentProcessor)
 {
-    public void ProcessPayment(Order order)
+    public void ProcessPayment(Order order, float amount)
     {
-        paymentProcessor.Process(order);
+        paymentProcessor.Process(order, amount);
     }
 }

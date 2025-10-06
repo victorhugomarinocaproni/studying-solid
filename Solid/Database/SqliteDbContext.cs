@@ -10,8 +10,10 @@ public class SqliteDbContext : IDbContext
 
     public void Connect()
     {
-        Connection = new SqliteConnection("DataSource=loja.db");
-        Connection.Open();
+        if (Connection.State != System.Data.ConnectionState.Open)
+        {
+            Connection.Open();
+        }
 
         using var command = Connection.CreateCommand();
         command.CommandText = @"
